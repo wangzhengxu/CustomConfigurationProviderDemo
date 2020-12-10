@@ -1,0 +1,15 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+
+    "ConfigurationCenterApi": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "api/Configurations",
+      "applicationUrl": "http://localhost:5023",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
