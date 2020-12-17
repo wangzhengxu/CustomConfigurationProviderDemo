@@ -18,7 +18,6 @@ namespace ConfigurationCenterApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddTransient<ConnectionManager>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

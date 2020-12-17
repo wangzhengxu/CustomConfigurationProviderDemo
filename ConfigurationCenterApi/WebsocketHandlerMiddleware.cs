@@ -14,11 +14,11 @@ namespace ConfigurationCenterApi
         private readonly ILogger<WebsocketHandlerMiddleware> _logger;
         private readonly ConnectionManager _connectionManager;
 
-        public WebsocketHandlerMiddleware(RequestDelegate next, ILogger<WebsocketHandlerMiddleware> logger, ConnectionManager connectionManager)
+        public WebsocketHandlerMiddleware(RequestDelegate next, ILogger<WebsocketHandlerMiddleware> logger)
         {
             _next = next;
             _logger = logger;
-            _connectionManager = connectionManager;
+            _connectionManager = ConnectionManager.Instance;
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -68,6 +68,10 @@ namespace ConfigurationCenterApi
             {
                 result = await webSocketInfo.Client.ReceiveAsync(new ArraySegment<byte>(buffer),
                     CancellationToken.None);
+                if (result.MessageType==WebSocketMessageType.Close)
+                {
+                    break;
+                }
                 if (result.MessageType == WebSocketMessageType.Text && !result.CloseStatus.HasValue)
                 {
                     var msg = Encoding.UTF8.GetString(buffer);
