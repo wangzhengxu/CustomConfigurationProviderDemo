@@ -43,5 +43,12 @@ namespace ConfigurationCenterApi.Controllers
                 }
             };
         }
+        [HttpGet("send_msg")]
+        public async Task<IActionResult> SendMsg()
+        {
+            var appId = "App01_YWJhYjEyMyM=";
+            await ConnectionManager.Instance.SendToAppClient(appId, "hello client!");
+            return Content("ok");
+        }
     }
 }

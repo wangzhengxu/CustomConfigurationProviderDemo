@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.WebSockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,39 +13,82 @@ namespace ConfigurationCenterApi
     {
         private static readonly Lazy<ConnectionManager> Lazy = new Lazy<ConnectionManager>(() => new ConnectionManager());
         public static ConnectionManager Instance => Lazy.Value;
-        private object _lock = new object();
         private ConnectionManager()
         {
         }
 
-        private readonly List<WebsocketClientInfo> _clientList = new List<WebsocketClientInfo>();
 
-        public void AddClient(WebsocketClientInfo info)
+        public static readonly ConcurrentDictionary<int, WebsocketClientInfo> Clients = new ConcurrentDictionary<int, WebsocketClientInfo>();
+
+
+        public void AddClient(int socketId, WebsocketClientInfo info)
         {
-            lock (_lock)
-            {
-                _clientList.Add(info);
-            }
-
+            Clients.TryAdd(socketId, info);
         }
 
-        public async Task RemoveClient(WebsocketClientInfo info, WebSocketCloseStatus? closeStatus, string closeDesc = "")
+        public void RemoveClient(WebsocketClientInfo info)
         {
-            lock (_lock)
-            {
-                if (_clientList.Contains(info))
-                {
-                    _clientList.Remove(info);
+            Clients.TryRemove(info.SocketId, out _);
+        }
+        public bool RemoveClient(int socketId)
+        {
+            return Clients.TryRemove(socketId, out _);
+        }
 
+
+
+        public async Task SendToAppClient(string appId, string message)
+        {
+            var msgBuf = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message));
+            var result = Clients.Where(x => x.Value.AppId == appId);
+            var keyValuePairs = result as KeyValuePair<int, WebsocketClientInfo>[] ?? result.ToArray();
+            if (keyValuePairs.Any())
+            {
+                foreach (var item in keyValuePairs)
+                {
+                    var client = item.Value.Client;
+                    if (client.State == WebSocketState.Open)
+                    {
+                        await client.SendAsync(msgBuf, WebSocketMessageType.Text, true, CancellationToken.None);
+                    }
                 }
             }
-            if (info.Client.State == WebSocketState.Open||(info.Client.State!=WebSocketState.Open&&info.Client.State!=WebSocketState.Connecting))
+        }
+
+        public  async Task CloseAllSocketsAsync(Action otherOperations)
+        {
+            var disposeList = new List<WebSocket>(Clients.Count);
+            while (Clients.Count > 0)
             {
-                await info.Client.CloseAsync(closeStatus ?? WebSocketCloseStatus.Empty, closeDesc, CancellationToken.None);
-                info.Client.Dispose();
+                var client = Clients.ElementAt(0).Value;
+                if (client.Client.State != WebSocketState.Open)
+                {
+                    continue;
+                }
+
+                Console.WriteLine($"Closing socket...{client.SocketId}");
+                var timeout = new CancellationTokenSource(5 * 1000);
+                try
+                {
+                    await client.Client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Closing", timeout.Token);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+
+                if (Clients.TryRemove(client.SocketId, out _))
+                {
+                    disposeList.Add(client.Client);
+                }
+                Console.WriteLine("Done...");
             }
 
-
+            otherOperations();
+            foreach (var socket in disposeList)
+            {
+                socket.Dispose();
+            }
         }
     }
 }
