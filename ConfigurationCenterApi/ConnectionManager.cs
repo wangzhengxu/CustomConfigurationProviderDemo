@@ -6,6 +6,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace ConfigurationCenterApi
 {
@@ -16,13 +17,14 @@ namespace ConfigurationCenterApi
         private ConnectionManager()
         {
         }
-
+   
 
         public static readonly ConcurrentDictionary<int, WebsocketClientInfo> Clients = new ConcurrentDictionary<int, WebsocketClientInfo>();
-
+        private readonly ILogger _logger = Log.ForContext<ConnectionManager>();
 
         public void AddClient(int socketId, WebsocketClientInfo info)
         {
+            
             Clients.TryAdd(socketId, info);
         }
 
@@ -66,7 +68,7 @@ namespace ConfigurationCenterApi
                     continue;
                 }
 
-                Console.WriteLine($"Closing socket...{client.SocketId}");
+                _logger.Information($"Closing socket...{client.SocketId}");
                 var timeout = new CancellationTokenSource(5 * 1000);
                 try
                 {
@@ -74,14 +76,14 @@ namespace ConfigurationCenterApi
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    _logger.Error(e.ToString());
                 }
 
                 if (Clients.TryRemove(client.SocketId, out _))
                 {
                     disposeList.Add(client.Client);
                 }
-                Console.WriteLine("Done...");
+                _logger.Information("Done...");
             }
 
             otherOperations();
