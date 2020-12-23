@@ -10,7 +10,7 @@ namespace WebApp.Infrastructure
         public MyConfigurationSource(MyConfigurationOptions myConfigurationOptions)
         {
             _myConfigurationOptions = myConfigurationOptions;
-         
+
         }
         public IConfigurationProvider Build(IConfigurationBuilder builder)
         {
@@ -21,5 +21,7 @@ namespace WebApp.Infrastructure
     public class MyConfigurationOptions
     {
         public string Url { get; set; }
+        public string AppId { get; set; }
+        public string ServerWebsocketUrl { get; set; }
     }
 }

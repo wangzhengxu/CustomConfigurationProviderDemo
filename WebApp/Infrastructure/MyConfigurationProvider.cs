@@ -15,6 +15,7 @@ namespace WebApp.Infrastructure
         public override void Load()
         {
             var workshop=new ConfigurationWorkshop(_myConfigurationOptions);
+            workshop.ConfigurationChanged += this.OnReload;
             workshop.Connect().GetAwaiter().GetResult();
             Data = workshop.Data;
         }

@@ -12,36 +12,37 @@ namespace ConfigurationCenterApi.Controllers
     [ApiController]
     public class ConfigurationsController : ControllerBase
     {
+        private static List<ConfigItem> list= new List<ConfigItem>
+        {
+            new ConfigItem
+            {
+                Key = "Host",
+                Value = "smtp.demo.email",
+                Group = "Email"
+            },
+            new ConfigItem
+            {
+                Key = "Port",
+                Value = "587",
+                Group = "Email"
+            },
+            new ConfigItem
+            {
+                Key = "UserName",
+                Value = "demo",
+                Group = "Email"
+            },
+            new ConfigItem
+            {
+                Key = "Password",
+                Value = "123123",
+                Group = "Email"
+            }
+        };
         [HttpGet]
         public IEnumerable<ConfigItem> Get()
         {
-            return new List<ConfigItem>
-            {
-                new ConfigItem
-                {
-                    Key = "Host",
-                    Value = "smtp.demo.email",
-                    Group = "Email"
-                    },
-                new ConfigItem
-                {
-                    Key = "Port",
-                    Value = "587",
-                    Group = "Email"
-                },
-                new ConfigItem
-                {
-                    Key = "UserName",
-                    Value = "demo",
-                    Group = "Email"
-                },
-                new ConfigItem
-                {
-                    Key = "Password",
-                    Value = "123123",
-                    Group = "Email"
-                }
-            };
+            return list;
         }
         [HttpGet("send_msg")]
         public async Task<IActionResult> SendMsg()
@@ -49,6 +50,20 @@ namespace ConfigurationCenterApi.Controllers
             var appId = "App01_YWJhYjEyMyM=";
             await ConnectionManager.Instance.SendToAppClient(appId, "hello client!");
             return Content("ok");
+        }
+        [HttpGet("update_conf")]
+        public async Task<IActionResult> UpdateConfiguration()
+        {
+
+            var appId = "App01_YWJhYjEyMyM=";
+            var portInfo = list.FirstOrDefault(x => x.Key == "Port");
+            if (portInfo != null)
+            {
+                portInfo.Value = "25";
+            }
+            await ConnectionManager.Instance.SendToAppClient(appId, "update");
+            return Ok(list);
+
         }
     }
 }

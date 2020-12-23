@@ -1,8 +1,21 @@
-﻿@{
+﻿@model Demo.Core.model.EmailConfiguration
+@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+    <div class="card" style="width: 18rem;">
+        <div class="card-body">
+            <h5 class="card-title">Configuration:</h5>
+            <ul class="list-group list-group-flush">
+                <li  class="list-group-item">Host:@Model?.Host</li>
+                <li  class="list-group-item">Port:@Model?.Port</li>
+                <li  class="list-group-item">UserName:@Model?.UserName</li>
+                <li  class="list-group-item">Password:@Model?.Password</li>
+            </ul>
+        </div>
+    </div>
+
 </div>

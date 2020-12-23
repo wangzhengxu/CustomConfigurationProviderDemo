@@ -24,7 +24,13 @@ namespace WebApp
                     webBuilder.UseStartup<Startup>();
                 }).ConfigureAppConfiguration((builderContext, config) =>
                 {
-                    config.AddMyConfiguration(options => { options.Url = "http://localhost:5023/api/Configurations"; });
+                    config.AddMyConfiguration(options =>
+                    {
+                        options.Url = "http://localhost:5023/api/Configurations";
+                        options.AppId = "App01_YWJhYjEyMyM=";
+                        options.ServerWebsocketUrl = "ws://localhost:5023/ws";
+                    });
+
                 });
     }
 }

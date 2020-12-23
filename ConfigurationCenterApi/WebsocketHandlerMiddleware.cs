@@ -44,10 +44,12 @@ namespace ConfigurationCenterApi
         {
             if (httpContext.Request.Path == "/ws")
             {
+               // LoggingRequestParam(httpContext);
                 if (httpContext.WebSockets.IsWebSocketRequest)
                 {
                     var appId = httpContext.Request.Headers["appid"];
                     var webSocket = await httpContext.WebSockets.AcceptWebSocketAsync();
+                    _logger.LogInformation("WebSocket Connected");
                     var clientInfo = new WebsocketClientInfo()
                     {
                         SocketId = Interlocked.Increment(ref _socketCounter),
@@ -137,6 +139,20 @@ namespace ConfigurationCenterApi
                 }
             }
 
+        }
+
+        private void LoggingRequestParam(HttpContext context)
+        {
+            _logger.LogInformation("Request Method: {0}", context.Request.Method);
+            _logger.LogInformation("Request Protocol: {0}", context.Request.Protocol);
+            if (context.Request.Headers != null)
+            {
+                _logger.LogInformation("Request Headers: ");
+                foreach (var (key, value) in context.Request.Headers)
+                {
+                    _logger.LogInformation("--> " + key + ": " + value);
+                }
+            }
         }
     }
 }

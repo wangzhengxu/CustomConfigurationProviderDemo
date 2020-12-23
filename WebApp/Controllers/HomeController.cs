@@ -21,7 +21,7 @@ namespace WebApp.Controllers
         private readonly IConfiguration _configuration;
         private readonly EmailConfiguration _emailConfiguration;
       
-        public HomeController(ILogger<HomeController> logger, IConfiguration configuration, IOptions<EmailConfiguration> emailConfiguration)
+        public HomeController(ILogger<HomeController> logger, IConfiguration configuration, IOptionsSnapshot<EmailConfiguration> emailConfiguration)
         {
             _logger = logger;
             _configuration = configuration;
@@ -30,8 +30,8 @@ namespace WebApp.Controllers
 
         public IActionResult Index()
         {
-            //            var host = _configuration["Email:Host"];
-            return View();
+            
+            return View(_emailConfiguration);
         }
 
 
